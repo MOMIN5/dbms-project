@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Welcome, {{ staff['name'] }}</h2>
+    <hr>
+    <h3>All Complaints</h3>
+    <ul class="list-group">
+        {% for complaint in complaints %}
+        <li class="list-group-item">
+            <h5>{{ complaint['title'] }}</h5>
+            <p>{{ complaint['description'] }}</p>
+            <p><strong>Student:</strong> {{ complaint['student_name'] }} ({{complaint['roll_no']}}) </p>
+            <p><strong>Status:</strong> {{ complaint['status'] }}</p>
+            {% if complaint['status'] == 'Pending' %}
+            <form method="post" action="{{ url_for('assign_complaint', complaint_id=complaint['id']) }}">
+                <input type="hidden" name="staff_id" value="{{ staff['id'] }}">
+                <button type="submit" class="btn btn-info btn-sm">Assign to Me</button>
+            </form>
+            {% elif complaint['staff_id'] == staff['id'] and complaint['status'] == 'Assigned' %}
+            <form method="post" action="{{ url_for('solve_complaint', complaint_id=complaint['id']) }}">
+                <button type="submit" class="btn btn-success btn-sm">Mark as Solved</button>
+            </form>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
