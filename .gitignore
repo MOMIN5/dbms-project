@@ -1,0 +1,32 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+
+# Virtual environment
+venv/
+.venv/
+env/
+.env/
+
+# Editor-specific files
+.vscode/
+.idea/
+
+# Database files
+*.sqlite3
+*.db
+
+# Uploaded media files (if applicable)
+media/
+uploads/
+
+# Configuration files (sensitive information)
+config.py
+instance/
+.flaskenv
+
+# Logs and temporary files
+*.log
+tmp/
