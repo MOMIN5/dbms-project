@@ -2,22 +2,59 @@
 
 {% block content %}
 <div class="row justify-content-center">
-  <div class="col-md-6">
-    <h2>Student Register</h2>
+  <div class="col-md-8">
+    <h2>Student Registration</h2>
+    <hr>
+    {% if error %}
+      <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
     <form method="post">
-      <div class="form-group">
-        <label for="name">Full Name</label>
-        <input type="text" class="form-control" id="name" name="name" required>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="first_name" class="form-label">First Name</label>
+          <input type="text" class="form-control" id="first_name" name="first_name" required>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="last_name" class="form-label">Last Name</label>
+          <input type="text" class="form-control" id="last_name" name="last_name" required>
+        </div>
       </div>
-      <div class="form-group">
-        <label for="roll_no">ROLL Number</label>
+      <div class="mb-3">
+        <label for="roll_no" class="form-label">Roll Number</label>
         <input type="text" class="form-control" id="roll_no" name="roll_no" required>
       </div>
-      <div class="form-group">
-        <label for="password">Password</label>
+      <div class="mb-3">
+        <label for="email" class="form-label">Email address</label>
+        <input type="email" class="form-control" id="email" name="email" required>
+      </div>
+      <div class="mb-3">
+        <label for="phone" class="form-label">Phone Number</label>
+        <input type="tel" class="form-control" id="phone" name="phone">
+      </div>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="course" class="form-label">Course</label>
+          <input type="text" class="form-control" id="course" name="course">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="year_of_study" class="form-label">Year of Study</label>
+          <input type="number" class="form-control" id="year_of_study" name="year_of_study" min="1">
+        </div>
+      </div>
+      <div class="mb-3">
+        <label for="department_id" class="form-label">Department</label>
+        <select class="form-select" id="department_id" name="department_id">
+          <option value="">Select Department</option>
+          {% for dept in departments %}
+          <option value="{{ dept.department_id }}">{{ dept.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
         <input type="password" class="form-control" id="password" name="password" required>
       </div>
-      <button type="submit" class="btn btn-primary">Register</button>
+      <button type="submit" class="btn btn-primary w-100">Register</button>
     </form>
   </div>
 </div>

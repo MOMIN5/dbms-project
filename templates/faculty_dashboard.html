@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2>Welcome, {{ faculty.first_name }} {{ faculty.last_name }} ({{ faculty.position }})</h2>
+    <hr>
+    <h3>Complaints Dashboard</h3>
+    <div class="list-group">
+        {% for complaint in complaints %}
+        <div class="list-group-item flex-column align-items-start">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">{{ complaint.subject }}</h5>
+                <small>Last updated: {{ complaint.last_updated.strftime('%Y-%m-%d %H:%M') }}</small>
+            </div>
+            <p class="mb-1">{{ complaint.description }}</p>
+            <small>
+                <strong>Student:</strong> 
+                {% if complaint.student_first_name %}
+                    {{ complaint.student_first_name }} {{ complaint.student_last_name }} ({{ complaint.roll_no }})
+                {% else %}
+                    <span class="text-muted">Anonymous</span>
+                {% endif %}
+                <br>
+                <strong>Category:</strong> {{ complaint.category | default('N/A') }} |
+                <strong>Status:</strong> <span class="badge bg-primary">{{ complaint.status | default('N/A') }}</span> |
+                <strong>Priority:</strong> <span class="badge bg-danger">{{ complaint.priority }}</span> |
+                <strong>Filed on:</strong> {{ complaint.date_filed.strftime('%Y-%m-%d') }}
+            </small>
+            <div class="mt-2">
+                <strong>Assigned to:</strong>
+                {% if complaint.assigned_to_faculty_id %}
+                    {{ complaint.faculty_first_name }} {{ complaint.faculty_last_name }}
+                {% else %}
+                    <span class="text-muted">Unassigned</span>
+                {% endif %}
+            </div>
+
+            <hr>
+            
+            <form method="post" action="{{ url_for('faculty.update_complaint', complaint_id=complaint.complaint_id, faculty_id=faculty.faculty_id) }}" class="row g-3 align-items-center">
+                <div class="col-auto">
+                    <label for="status_id-{{ complaint.complaint_id }}" class="visually-hidden">Status</label>
+                    <select class="form-select form-select-sm" name="status_id" id="status_id-{{ complaint.complaint_id }}">
+                        <option value="">-- Change Status --</option>
+                        {% for status in all_statuses %}
+                        <option value="{{ status.status_id }}" {% if status.status == complaint.status %}selected{% endif %}>{{ status.status }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col">
+                    <label for="comment-{{ complaint.complaint_id }}" class="visually-hidden">Comment</label>
+                    <input type="text" class="form-control form-control-sm" name="comment" id="comment-{{ complaint.complaint_id }}" placeholder="Add a comment (optional)">
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                </div>
+                {% if not complaint.assigned_to_faculty_id %}
+                <div class="col-auto">
+                    <button type="submit" name="assign_to_me" value="true" class="btn btn-info btn-sm">Assign to Me</button>
+                </div>
+                {% endif %}
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
