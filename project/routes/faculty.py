@@ -38,7 +38,8 @@ def dashboard(faculty_id):
         return "Faculty not found", 404
     
     # Fetch all complaints with all related info
-    query = """
+    # Fetch active complaints (not 'Closed' or 'Rejected')
+    query_active = """
         SELECT 
             c.complaint_id, c.subject, c.description, c.date_filed, c.priority, c.last_updated,
             c.assigned_to_faculty_id,
@@ -51,10 +52,51 @@ def dashboard(faculty_id):
         LEFT JOIN complaint_category cat ON c.category_id = cat.category_id
         LEFT JOIN complaint_status stat ON c.status_id = stat.status_id
         LEFT JOIN faculty f ON c.assigned_to_faculty_id = f.faculty_id
+        WHERE stat.status NOT IN ('Closed', 'Rejected', 'Resolved')
         ORDER BY c.last_updated DESC
     """
-    cursor.execute(query)
-    complaints = cursor.fetchall()
+    cursor.execute(query_active)
+    active_complaints = cursor.fetchall()
+
+    # Fetch closed complaints
+    query_closed = """
+        SELECT 
+            c.complaint_id, c.subject, c.description, c.date_filed, c.priority, c.last_updated,
+            c.assigned_to_faculty_id,
+            s.first_name as student_first_name, s.last_name as student_last_name, s.roll_no,
+            cat.category,
+            stat.status,
+            f.first_name as faculty_first_name, f.last_name as faculty_last_name
+        FROM complaint c
+        LEFT JOIN student s ON c.student_roll_no = s.roll_no
+        LEFT JOIN complaint_category cat ON c.category_id = cat.category_id
+        LEFT JOIN complaint_status stat ON c.status_id = stat.status_id
+        LEFT JOIN faculty f ON c.assigned_to_faculty_id = f.faculty_id
+        WHERE stat.status = 'Closed'
+        ORDER BY c.last_updated DESC
+    """
+    cursor.execute(query_closed)
+    closed_complaints = cursor.fetchall()
+
+    # Fetch resolved complaints
+    query_resolved = """
+        SELECT 
+            c.complaint_id, c.subject, c.description, c.date_filed, c.priority, c.last_updated,
+            c.assigned_to_faculty_id,
+            s.first_name as student_first_name, s.last_name as student_last_name, s.roll_no,
+            cat.category,
+            stat.status,
+            f.first_name as faculty_first_name, f.last_name as faculty_last_name
+        FROM complaint c
+        LEFT JOIN student s ON c.student_roll_no = s.roll_no
+        LEFT JOIN complaint_category cat ON c.category_id = cat.category_id
+        LEFT JOIN complaint_status stat ON c.status_id = stat.status_id
+        LEFT JOIN faculty f ON c.assigned_to_faculty_id = f.faculty_id
+        WHERE stat.status = 'Resolved'
+        ORDER BY c.last_updated DESC
+    """
+    cursor.execute(query_resolved)
+    resolved_complaints = cursor.fetchall()
 
     # Fetch all possible statuses for the update dropdown
     cursor.execute("SELECT status_id, status FROM complaint_status ORDER BY status_id")
@@ -62,7 +104,7 @@ def dashboard(faculty_id):
     
     cursor.close()
     
-    return render_template('faculty_dashboard.html', faculty=faculty, complaints=complaints, all_statuses=all_statuses)
+    return render_template('faculty_dashboard.html', faculty=faculty, active_complaints=active_complaints, closed_complaints=closed_complaints, resolved_complaints=resolved_complaints, all_statuses=all_statuses)
 
 @bp.route('/complaint/<int:complaint_id>/update/<int:faculty_id>', methods=['POST'])
 def update_complaint(complaint_id, faculty_id):
@@ -105,6 +147,42 @@ def update_complaint(complaint_id, faculty_id):
         db.rollback()
         print(f"Error updating complaint: {e}")
         # In a real app, flash an error message
+    finally:
+        cursor.close()
+
+    return redirect(url_for('faculty.dashboard', faculty_id=faculty_id))
+
+
+@bp.route('/complaint/<int:complaint_id>/reopen/<int:faculty_id>', methods=['POST'])
+def reopen_complaint(complaint_id, faculty_id):
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    try:
+        # Fetch current state of the complaint for history tracking
+        cursor.execute("SELECT status_id FROM complaint WHERE complaint_id = %s", (complaint_id,))
+        current_complaint_data = cursor.fetchone()
+        if not current_complaint_data:
+            return "Complaint not found", 404
+        
+        current_complaint = cast(Dict[str, Any], current_complaint_data)
+        previous_status_id = current_complaint['status_id']
+        new_status_id = 2  # 'Under Review'
+
+        # Update the complaint status
+        cursor.execute("UPDATE complaint SET status_id = %s WHERE complaint_id = %s", (new_status_id, complaint_id))
+
+        # Add a record to the history table for the status change
+        history_query = """
+            INSERT INTO complaint_history (complaint_id, action_by_faculty_id, previous_status_id, new_status_id, comment)
+            VALUES (%s, %s, %s, %s, %s)
+        """
+        cursor.execute(history_query, (complaint_id, faculty_id, previous_status_id, new_status_id, "Complaint reopened by faculty."))
+
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        print(f"Error reopening complaint: {e}")
     finally:
         cursor.close()
 

@@ -4,9 +4,9 @@
 <div class="container-fluid">
     <h2>Welcome, {{ faculty.first_name }} {{ faculty.last_name }} ({{ faculty.position }})</h2>
     <hr>
-    <h3>Complaints Dashboard</h3>
+    <h3>Active Complaints</h3>
     <div class="list-group">
-        {% for complaint in complaints %}
+        {% for complaint in active_complaints %}
         <div class="list-group-item flex-column align-items-start">
             <div class="d-flex w-100 justify-content-between">
                 <h5 class="mb-1">{{ complaint.subject }}</h5>
@@ -61,7 +61,108 @@
                 {% endif %}
             </form>
         </div>
+        {% else %}
+        <div class="list-group-item">
+            <p class="mb-0">No active complaints.</p>
+        </div>
         {% endfor %}
+    </div>
+
+    <hr>
+
+    <div class="btn-group" role="group" aria-label="Complaint views">
+        <button class="btn btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#closedComplaints" aria-expanded="false" aria-controls="closedComplaints">
+            View Closed Complaints
+        </button>
+        <button class="btn btn-success" type="button" data-bs-toggle="collapse" data-bs-target="#resolvedComplaints" aria-expanded="false" aria-controls="resolvedComplaints">
+            View Resolved Complaints
+        </button>
+    </div>
+
+    <div class="collapse mt-3" id="closedComplaints">
+        <h4>Closed Complaints</h4>
+        <div class="list-group">
+            {% for complaint in closed_complaints %}
+            <div class="list-group-item flex-column align-items-start">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">{{ complaint.subject }}</h5>
+                    <small>Last updated: {{ complaint.last_updated.strftime('%Y-%m-%d %H:%M') }}</small>
+                </div>
+                <p class="mb-1">{{ complaint.description }}</p>
+                <small>
+                    <strong>Student:</strong> 
+                    {% if complaint.student_first_name %}
+                        {{ complaint.student_first_name }} {{ complaint.student_last_name }} ({{ complaint.roll_no }})
+                    {% else %}
+                        <span class="text-muted">Anonymous</span>
+                    {% endif %}
+                    <br>
+                    <strong>Category:</strong> {{ complaint.category | default('N/A') }} |
+                    <strong>Status:</strong> <span class="badge bg-secondary">{{ complaint.status | default('N/A') }}</span> |
+                    <strong>Priority:</strong> <span class="badge bg-danger">{{ complaint.priority }}</span> |
+                    <strong>Filed on:</strong> {{ complaint.date_filed.strftime('%Y-%m-%d') }}
+                </small>
+                <div class="mt-2">
+                    <strong>Assigned to:</strong>
+                    {% if complaint.assigned_to_faculty_id %}
+                        {{ complaint.faculty_first_name }} {{ complaint.faculty_last_name }}
+                    {% else %}
+                        <span class="text-muted">Unassigned</span>
+                    {% endif %}
+                </div>
+                <form method="post" action="{{ url_for('faculty.reopen_complaint', complaint_id=complaint.complaint_id, faculty_id=faculty.faculty_id) }}" class="mt-2">
+                    <button type="submit" class="btn btn-warning btn-sm">Reopen Complaint</button>
+                </form>
+            </div>
+            {% else %}
+            <div class="list-group-item">
+                <p class="mb-0">No closed complaints.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="collapse mt-3" id="resolvedComplaints">
+        <h4>Resolved Complaints</h4>
+        <div class="list-group">
+            {% for complaint in resolved_complaints %}
+            <div class="list-group-item flex-column align-items-start">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">{{ complaint.subject }}</h5>
+                    <small>Last updated: {{ complaint.last_updated.strftime('%Y-%m-%d %H:%M') }}</small>
+                </div>
+                <p class="mb-1">{{ complaint.description }}</p>
+                <small>
+                    <strong>Student:</strong> 
+                    {% if complaint.student_first_name %}
+                        {{ complaint.student_first_name }} {{ complaint.student_last_name }} ({{ complaint.roll_no }})
+                    {% else %}
+                        <span class="text-muted">Anonymous</span>
+                    {% endif %}
+                    <br>
+                    <strong>Category:</strong> {{ complaint.category | default('N/A') }} |
+                    <strong>Status:</strong> <span class="badge bg-success">{{ complaint.status | default('N/A') }}</span> |
+                    <strong>Priority:</strong> <span class="badge bg-danger">{{ complaint.priority }}</span> |
+                    <strong>Filed on:</strong> {{ complaint.date_filed.strftime('%Y-%m-%d') }}
+                </small>
+                <div class="mt-2">
+                    <strong>Assigned to:</strong>
+                    {% if complaint.assigned_to_faculty_id %}
+                        {{ complaint.faculty_first_name }} {{ complaint.faculty_last_name }}
+                    {% else %}
+                        <span class="text-muted">Unassigned</span>
+                    {% endif %}
+                </div>
+                <form method="post" action="{{ url_for('faculty.reopen_complaint', complaint_id=complaint.complaint_id, faculty_id=faculty.faculty_id) }}" class="mt-2">
+                    <button type="submit" class="btn btn-warning btn-sm">Reopen Complaint</button>
+                </form>
+            </div>
+            {% else %}
+            <div class="list-group-item">
+                <p class="mb-0">No resolved complaints.</p>
+            </div>
+            {% endfor %}
+        </div>
     </div>
 </div>
 {% endblock %}
