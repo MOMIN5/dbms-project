@@ -66,12 +66,14 @@ def dashboard(faculty_id):
             s.first_name as student_first_name, s.last_name as student_last_name, s.roll_no,
             cat.category,
             stat.status,
-            f.first_name as faculty_first_name, f.last_name as faculty_last_name
+            f.first_name as faculty_first_name, f.last_name as faculty_last_name,
+            fb.rating, fb.comments as feedback_comments
         FROM complaint c
         LEFT JOIN student s ON c.student_roll_no = s.roll_no
         LEFT JOIN complaint_category cat ON c.category_id = cat.category_id
         LEFT JOIN complaint_status stat ON c.status_id = stat.status_id
         LEFT JOIN faculty f ON c.assigned_to_faculty_id = f.faculty_id
+        LEFT JOIN feedback fb ON c.complaint_id = fb.complaint_id
         WHERE stat.status = 'Closed'
         ORDER BY c.last_updated DESC
     """
@@ -86,12 +88,14 @@ def dashboard(faculty_id):
             s.first_name as student_first_name, s.last_name as student_last_name, s.roll_no,
             cat.category,
             stat.status,
-            f.first_name as faculty_first_name, f.last_name as faculty_last_name
+            f.first_name as faculty_first_name, f.last_name as faculty_last_name,
+            fb.rating, fb.comments as feedback_comments
         FROM complaint c
         LEFT JOIN student s ON c.student_roll_no = s.roll_no
         LEFT JOIN complaint_category cat ON c.category_id = cat.category_id
         LEFT JOIN complaint_status stat ON c.status_id = stat.status_id
         LEFT JOIN faculty f ON c.assigned_to_faculty_id = f.faculty_id
+        LEFT JOIN feedback fb ON c.complaint_id = fb.complaint_id
         WHERE stat.status = 'Resolved'
         ORDER BY c.last_updated DESC
     """

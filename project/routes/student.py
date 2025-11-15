@@ -4,47 +4,6 @@ from project.db import get_db
 
 bp = Blueprint('student', __name__, url_prefix='/student')
 
-@bp.route('/register', methods=['GET', 'POST'])
-def register():
-    db = get_db()
-    cursor = db.cursor(dictionary=True)
-    
-    # Fetch departments for the registration form dropdown
-    cursor.execute("SELECT department_id, name FROM department WHERE type = 'Academic' ORDER BY name")
-    departments = cursor.fetchall()
-
-    if request.method == 'POST':
-        # Extract form data
-        roll_no = request.form['roll_no']
-        first_name = request.form['first_name']
-        last_name = request.form['last_name']
-        email = request.form['email']
-        phone = request.form.get('phone')
-        course = request.form.get('course')
-        department_id = request.form.get('department_id')
-        year_of_study = request.form.get('year_of_study')
-        password = request.form['password']
-        
-        try:
-            # Insert new student into the database
-            query = """
-                INSERT INTO student (roll_no, first_name, last_name, email, phone, course, department_id, year_of_study, password) 
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """
-            cursor.execute(query, (roll_no, first_name, last_name, email, phone, course, department_id, year_of_study, password))
-            db.commit()
-            return redirect(url_for('student.login'))
-        except Exception as e:
-            # Handle potential errors like duplicate roll_no or email
-            # In a real app, you'd want to flash a message to the user
-            print(f"Error during registration: {e}")
-            return render_template('student_register.html', departments=departments, error="Registration failed. Please check your input.")
-        finally:
-            cursor.close()
-
-    cursor.close()
-    return render_template('student_register.html', departments=departments)
-
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -102,3 +61,30 @@ def dashboard(roll_no):
     cursor.close()
     
     return render_template('student_dashboard.html', student=student, complaints=complaints, categories=categories)
+
+@bp.route('/complaint/<int:complaint_id>/feedback/<string:roll_no>', methods=['POST'])
+def add_feedback(complaint_id, roll_no):
+    rating = request.form.get('rating')
+    comments = request.form.get('comments')
+
+    if not roll_no:
+        return "Student roll number is required.", 400
+
+    db = get_db()
+    cursor = db.cursor()
+    try:
+        query = """
+            INSERT INTO feedback (complaint_id, student_roll_no, rating, comments)
+            VALUES (%s, %s, %s, %s)
+            ON DUPLICATE KEY UPDATE rating = VALUES(rating), comments = VALUES(comments)
+        """
+        cursor.execute(query, (complaint_id, roll_no, rating, comments))
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        print(f"Error adding feedback: {e}")
+        # In a real app, you would flash an error message
+    finally:
+        cursor.close()
+
+    return redirect(url_for('student.dashboard', roll_no=roll_no))
