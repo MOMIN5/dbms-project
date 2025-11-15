@@ -1,90 +1,117 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container">
-    <div class="row">
-        <div class="col-md-8">
-            <h2>Welcome, {{ student.first_name }} {{ student.last_name }} ({{ student.roll_no }})</h2>
-            <hr>
-            <h3>My Complaints</h3>
-            <div class="list-group">
-                {% for complaint in complaints %}
-                <div class="list-group-item">
-                    <div class="d-flex w-100 justify-content-between">
-                        <h5 class="mb-1">{{ complaint.subject }}</h5>
-                        <small>Last updated: {{ complaint.last_updated.strftime('%Y-%m-%d %H:%M') }}</small>
-                    </div>
-                    <p class="mb-1">{{ complaint.description }}</p>
-                    <small>
-                        <strong>Category:</strong> {{ complaint.category | default('N/A') }} |
-                        <strong>Status:</strong> <span class="badge bg-info">{{ complaint.status | default('N/A') }}</span> |
-                        <strong>Priority:</strong> <span class="badge bg-warning">{{ complaint.priority }}</span>
-                    </small>
-                    
-                    {% if complaint.status == 'Resolved' and complaint.rating is none %}
-                    <div class="mt-3">
-                        <h6>Submit Feedback</h6>
-                        <form method="post" action="{{ url_for('student.add_feedback', complaint_id=complaint.complaint_id, roll_no=student.roll_no) }}">
-                            <div class="mb-2">
-                                <label for="rating" class="form-label">Rating (1-5)</label>
-                                <input type="number" class="form-control" name="rating" min="1" max="5" required>
-                            </div>
-                            <div class="mb-2">
-                                <label for="comments" class="form-label">Comments</label>
-                                <textarea class="form-control" name="comments" rows="2"></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-success btn-sm">Submit Feedback</button>
-                        </form>
-                    </div>
-                    {% elif complaint.rating is not none %}
-                    <div class="mt-3">
-                        <p><strong>Feedback Given:</strong><br>
-                           Rating: {{ complaint.rating }}/5 <br>
-                           Comments: {{ complaint.feedback_comments | default('N/A') }}
-                        </p>
-                    </div>
-                    {% endif %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">Welcome, {{ student.first_name }} {{ student.last_name }}</h2>
+                    <h6 class="card-subtitle mb-2 text-muted">Roll Number: {{ student.roll_no }}</h6>
                 </div>
-                {% endfor %}
             </div>
         </div>
-        <div class="col-md-4">
-            <h3>File a New Complaint</h3>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <h3>My Complaints</h3>
             <hr>
-            <form method="post" action="{{ url_for('complaint.submit', student_roll_no=student.roll_no) }}">
-                <div class="mb-3">
-                    <label for="subject" class="form-label">Subject</label>
-                    <input type="text" class="form-control" id="subject" name="subject" required>
+            {% if complaints %}
+                {% for complaint in complaints %}
+                <div class="card mb-3">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">{{ complaint.subject }}</h5>
+                        <span class="badge bg-info text-dark">{{ complaint.status | default('N/A') }}</span>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">{{ complaint.description }}</p>
+                        <p class="card-text">
+                            <small class="text-muted">
+                                <strong>Category:</strong> {{ complaint.category | default('N/A') }} |
+                                <strong>Priority:</strong> {{ complaint.priority }} |
+                                <strong>Last Updated:</strong> {{ complaint.last_updated.strftime('%Y-%m-%d %H:%M') }}
+                            </small>
+                        </p>
+
+                        {% if complaint.status == 'Resolved' and complaint.rating is none %}
+                        <div class="card mt-3 bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title">Submit Feedback</h6>
+                                <form method="post" action="{{ url_for('student.add_feedback', complaint_id=complaint.complaint_id, roll_no=student.roll_no) }}">
+                                    <div class="mb-2">
+                                        <label for="rating-{{ complaint.complaint_id }}" class="form-label">Rating (1-5)</label>
+                                        <input type="number" class="form-control" id="rating-{{ complaint.complaint_id }}" name="rating" min="1" max="5" required>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label for="comments-{{ complaint.complaint_id }}" class="form-label">Comments</label>
+                                        <textarea class="form-control" id="comments-{{ complaint.complaint_id }}" name="comments" rows="2"></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-success btn-sm">Submit Feedback</button>
+                                </form>
+                            </div>
+                        </div>
+                        {% elif complaint.rating is not none %}
+                        <div class="card mt-3">
+                            <div class="card-body">
+                                <h6 class="card-title">Feedback Submitted</h6>
+                                <p class="mb-1"><strong>Rating:</strong> {{ complaint.rating }}/5</p>
+                                <p class="mb-0"><strong>Comments:</strong> {{ complaint.feedback_comments | default('N/A') }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label for="category_id" class="form-label">Category</label>
-                    <select class="form-select" id="category_id" name="category_id" required>
-                        <option value="">Select a Category</option>
-                        {% for category in categories %}
-                        <option value="{{ category.category_id }}">{{ category.category }}</option>
-                        {% endfor %}
-                    </select>
+                {% endfor %}
+            {% else %}
+                <div class="alert alert-info" role="alert">
+                    You have not filed any complaints yet.
                 </div>
-                <div class="mb-3">
-                    <label for="description" class="form-label">Description</label>
-                    <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+            {% endif %}
+        </div>
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title">File a New Complaint</h3>
+                    <hr>
+                    <form method="post" action="{{ url_for('complaint.submit', student_roll_no=student.roll_no) }}">
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">Subject</label>
+                            <input type="text" class="form-control" id="subject" name="subject" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="category_id" class="form-label">Category</label>
+                            <select class="form-select" id="category_id" name="category_id" required>
+                                <option value="" disabled selected>Select a Category</option>
+                                {% for category in categories %}
+                                <option value="{{ category.category_id }}">{{ category.category }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="priority" class="form-label">Priority</label>
+                            <select class="form-select" id="priority" name="priority">
+                                <option value="Low">Low</option>
+                                <option value="Medium" selected>Medium</option>
+                                <option value="High">High</option>
+                            </select>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="is_anonymous" name="is_anonymous" value="1">
+                            <label class="form-check-label" for="is_anonymous">
+                                Submit Anonymously
+                            </label>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Submit Complaint</button>
+                        </div>
+                    </form>
                 </div>
-                <div class="mb-3">
-                    <label for="priority" class="form-label">Priority</label>
-                    <select class="form-select" id="priority" name="priority">
-                        <option value="Low">Low</option>
-                        <option value="Medium" selected>Medium</option>
-                        <option value="High">High</option>
-                    </select>
-                </div>
-                <div class="form-check mb-3">
-                    <input class="form-check-input" type="checkbox" id="is_anonymous" name="is_anonymous" value="1">
-                    <label class="form-check-label" for="is_anonymous">
-                        Submit Anonymously
-                    </label>
-                </div>
-                <button type="submit" class="btn btn-primary w-100">Submit Complaint</button>
-            </form>
+            </div>
         </div>
     </div>
 </div>

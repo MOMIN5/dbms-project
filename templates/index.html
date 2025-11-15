@@ -1,12 +1,14 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="jumbotron">
+<div class="jumbotron jumbotron-custom text-center">
   <h1 class="display-4">Grievance Redressal System</h1>
   <p class="lead">Welcome to the university's grievance and complaint redressal system.</p>
-  <hr class="my-4">
-  <p>Please select your portal.</p>
-  <a class="btn btn-primary btn-lg" href="{{ url_for('student.login') }}" role="button">Student Portal</a>
-  <a class="btn btn-secondary btn-lg" href="{{ url_for('faculty.login') }}" role="button">Faculty Portal</a>
+  <hr class="my-4 bg-light">
+  <p>Please select your portal to continue.</p>
+  <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+    <a class="btn btn-primary btn-lg px-4 gap-3" href="{{ url_for('student.login') }}" role="button">Student Portal</a>
+    <a class="btn btn-secondary btn-lg px-4" href="{{ url_for('faculty.login') }}" role="button">Faculty Portal</a>
+  </div>
 </div>
 {% endblock %}

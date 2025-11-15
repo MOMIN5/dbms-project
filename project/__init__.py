@@ -7,7 +7,7 @@ from .routes.complaint import bp as complaint_bp
 
 def create_app():
     """Create and configure an instance of the Flask application."""
-    app = Flask(__name__, instance_relative_config=True, template_folder='../templates')
+    app = Flask(__name__, instance_relative_config=True, template_folder='../templates', static_folder='../static')
     app.config.from_mapping(
         SECRET_KEY='dev',
     )
