@@ -119,11 +119,13 @@ def create_tables():
             CREATE TABLE IF NOT EXISTS complaint_history (
                 history_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
                 complaint_id INT UNSIGNED NOT NULL,
+                action_by_faculty_id INT UNSIGNED,
                 action_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 previous_status_id INT UNSIGNED,
                 new_status_id INT UNSIGNED,
                 comment TEXT,
                 FOREIGN KEY (complaint_id) REFERENCES complaint(complaint_id) ON DELETE CASCADE,
+                FOREIGN KEY (action_by_faculty_id) REFERENCES faculty(faculty_id) ON DELETE SET NULL,
                 FOREIGN KEY (previous_status_id) REFERENCES complaint_status(status_id) ON DELETE SET NULL,
                 FOREIGN KEY (new_status_id) REFERENCES complaint_status(status_id) ON DELETE SET NULL
             ) ENGINE=InnoDB;

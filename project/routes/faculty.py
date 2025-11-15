@@ -90,17 +90,15 @@ def update_complaint(complaint_id, faculty_id):
                 new_status_id = 2 
 
         # Logic to update the status
-        if new_status_id:
+        if new_status_id and new_status_id != previous_status_id:
             cursor.execute("UPDATE complaint SET status_id = %s WHERE complaint_id = %s", (new_status_id, complaint_id))
             
-            # Add a record to the history table
+            # Add a record to the history table for the status change
             history_query = """
-                INSERT INTO complaint_history (complaint_id, action_by_faculty_id, previous_status, new_status, comment)
-                SELECT %s, %s, ps.status, ns.status, %s
-                FROM complaint_status ps, complaint_status ns
-                WHERE ps.status_id = %s AND ns.status_id = %s
+                INSERT INTO complaint_history (complaint_id, action_by_faculty_id, previous_status_id, new_status_id, comment)
+                VALUES (%s, %s, %s, %s, %s)
             """
-            cursor.execute(history_query, (complaint_id, faculty_id, comment, previous_status_id, new_status_id))
+            cursor.execute(history_query, (complaint_id, faculty_id, previous_status_id, new_status_id, comment))
 
         db.commit()
     except Exception as e:
