@@ -35,7 +35,7 @@
                                 <p class="card-text">
                                     <small class="text-muted">
                                         <strong>Student:</strong>
-                                        {% if complaint.student_first_name %}
+                                        {% if not complaint.is_anonymous %}
                                             {{ complaint.student_first_name }} {{ complaint.student_last_name }} ({{ complaint.roll_no }})
                                         {% else %}
                                             Anonymous
@@ -44,7 +44,8 @@
                                         <strong>Category:</strong> {{ complaint.category | default('N/A') }} |
                                         <strong>Priority:</strong> {{ complaint.priority }} |
                                         <strong>Filed:</strong> {{ complaint.date_filed.strftime('%Y-%m-%d') }} |
-                                        <strong>Updated:</strong> {{ complaint.last_updated.strftime('%Y-%m-%d %H:%M') }}
+                                        <strong>Updated:</strong> {{ complaint.last_updated.strftime('%Y-%m-%d %H:%M') }} |
+                                        <strong>Deadline:</strong> {{ complaint.deadline.strftime('%Y-%m-%d') if complaint.deadline else 'Not set' }}
                                     </small>
                                 </p>
                                 <div class="mb-2">
@@ -56,23 +57,49 @@
                                     {% endif %}
                                 </div>
                                 <hr>
-                                <form method="post" action="{{ url_for('faculty.update_complaint', complaint_id=complaint.complaint_id, faculty_id=faculty.faculty_id) }}" class="row g-2 align-items-center">
-                                    <div class="col-md-4">
-                                        <select class="form-select form-select-sm" name="status_id">
-                                            <option value="">-- Change Status --</option>
-                                            {% for status in all_statuses %}
-                                            <option value="{{ status.status_id }}" {% if status.status == complaint.status %}selected{% endif %}>{{ status.status }}</option>
-                                            {% endfor %}
-                                        </select>
+                                <form method="post" action="{{ url_for('faculty.update_complaint', complaint_id=complaint.complaint_id, faculty_id=faculty.faculty_id) }}">
+                                    <div class="row g-2 align-items-center">
+                                        <div class="col-md-4">
+                                            <select class="form-select form-select-sm" name="status_id">
+                                                <option value="">-- Change Status --</option>
+                                                {% for status in all_statuses %}
+                                                <option value="{{ status.status_id }}" {% if status.status == complaint.status %}selected{% endif %}>{{ status.status }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <select class="form-select form-select-sm" name="priority">
+                                                <option value="">-- Set Priority --</option>
+                                                <option value="Low" {% if complaint.priority == 'Low' %}selected{% endif %}>Low</option>
+                                                <option value="Medium" {% if complaint.priority == 'Medium' %}selected{% endif %}>Medium</option>
+                                                <option value="High" {% if complaint.priority == 'High' %}selected{% endif %}>High</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="text" class="form-control form-control-sm" name="comment" placeholder="Add a comment (optional)">
+                                        </div>
                                     </div>
-                                    <div class="col-md-5">
-                                        <input type="text" class="form-control form-control-sm" name="comment" placeholder="Add a comment (optional)">
+                                    {% if faculty.position == 'admin' %}
+                                    <div class="row g-2 mt-2">
+                                        <div class="col-md-6">
+                                            <select class="form-select form-select-sm" name="assign_to_faculty_id">
+                                                <option value="">-- Assign to Faculty --</option>
+                                                {% for fac in all_faculty %}
+                                                    <option value="{{ fac.faculty_id }}" {% if fac.faculty_id == complaint.assigned_to_faculty_id %}selected{% endif %}>
+                                                        {{ fac.first_name }} {{ fac.last_name }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <input type="date" class="form-control form-control-sm" name="deadline" title="Set Deadline">
+                                        </div>
                                     </div>
-                                    <div class="col-md-3 d-flex justify-content-end">
-                                        <button type="submit" class="btn btn-primary btn-sm me-1">Update</button>
-                                        {% if not complaint.assigned_to_faculty_id %}
-                                        <button type="submit" name="assign_to_me" value="true" class="btn btn-info btn-sm">Assign</button>
-                                        {% endif %}
+                                    {% endif %}
+                                    <div class="row g-2 mt-2">
+                                        <div class="col-12 d-flex justify-content-end">
+                                            <button type="submit" class="btn btn-primary btn-sm">Update Complaint</button>
+                                        </div>
                                     </div>
                                 </form>
                             </div>
@@ -106,7 +133,7 @@
                                 <p class="card-text">
                                     <small class="text-muted">
                                         <strong>Student:</strong>
-                                        {% if complaint.student_first_name %}
+                                        {% if not complaint.is_anonymous %}
                                             {{ complaint.student_first_name }} {{ complaint.student_last_name }} ({{ complaint.roll_no }})
                                         {% else %}
                                             Anonymous
@@ -159,7 +186,7 @@
                                 <p class="card-text">
                                     <small class="text-muted">
                                         <strong>Student:</strong>
-                                        {% if complaint.student_first_name %}
+                                        {% if not complaint.is_anonymous %}
                                             {{ complaint.student_first_name }} {{ complaint.student_last_name }} ({{ complaint.roll_no }})
                                         {% else %}
                                             Anonymous

@@ -10,11 +10,10 @@ def submit(student_roll_no):
     subject = request.form['subject']
     category_id = request.form['category_id']
     description = request.form['description']
-    priority = request.form['priority']
     is_anonymous = 'is_anonymous' in request.form
 
-    # If anonymous, the student_roll_no is not stored
-    roll_no_to_store = None if is_anonymous else student_roll_no
+    # The `is_anonymous` flag will determine if it's displayed to others.
+    roll_no_to_store = student_roll_no
 
     db = get_db()
     cursor = db.cursor()
@@ -22,12 +21,12 @@ def submit(student_roll_no):
         # Set initial status to 'Filed' (assuming status_id 1 is 'Filed')
         initial_status_id = 1
         
-        # Insert the new complaint with the initial status
+        # Insert the new complaint with the initial status and default priority
         query = """
-            INSERT INTO complaint (subject, category_id, description, priority, is_anonymous, student_roll_no, status_id)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO complaint (subject, category_id, description, is_anonymous, student_roll_no, status_id)
+            VALUES (%s, %s, %s, %s, %s, %s)
         """
-        cursor.execute(query, (subject, category_id, description, priority, is_anonymous, roll_no_to_store, initial_status_id))
+        cursor.execute(query, (subject, category_id, description, is_anonymous, roll_no_to_store, initial_status_id))
         
         db.commit()
     except Exception as e:

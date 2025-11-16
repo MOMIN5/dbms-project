@@ -108,7 +108,7 @@ def create_tables():
                 status_id INT UNSIGNED DEFAULT 1,
                 priority ENUM('Low', 'Medium', 'High') DEFAULT 'Medium',
                 last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                deadline DATE,
+                deadline DATE DEFAULT NULL,
                 FOREIGN KEY (student_roll_no) REFERENCES student(roll_no) ON DELETE CASCADE,
                 FOREIGN KEY (category_id) REFERENCES complaint_category(category_id) ON DELETE SET NULL,
                 FOREIGN KEY (assigned_to_faculty_id) REFERENCES faculty(faculty_id) ON DELETE SET NULL,

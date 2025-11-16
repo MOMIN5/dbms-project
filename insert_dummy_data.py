@@ -91,7 +91,7 @@ def insert_dummy_data():
         """
 
         faculty.append((
-            'ADMIN', 'ADMIN', 'admin@nsut.com', '5552211111', 'HOD', 1, '123456'
+            'ADMIN', 'ADMIN', 'admin@nsut.com', '5552211111', 'admin', 1, '123456'
         ))
         cursor.executemany(faculty_insert_query, faculty)
         print(f"-> Inserted/Updated {cursor.rowcount} faculty members.")

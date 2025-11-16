@@ -43,7 +43,8 @@ def dashboard(roll_no):
             c.complaint_id, c.subject, c.description, c.date_filed, c.priority, c.last_updated,
             cat.category,
             stat.status,
-            f.rating, f.comments as feedback_comments
+            f.rating, f.comments as feedback_comments,
+            c.is_anonymous
         FROM complaint c
         LEFT JOIN complaint_category cat ON c.category_id = cat.category_id
         LEFT JOIN complaint_status stat ON c.status_id = stat.status_id
