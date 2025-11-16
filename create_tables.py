@@ -130,16 +130,7 @@ def create_tables():
                 FOREIGN KEY (new_status_id) REFERENCES complaint_status(status_id) ON DELETE SET NULL
             ) ENGINE=InnoDB;
         """
-        attachment_table = """
-            CREATE TABLE IF NOT EXISTS attachment (
-                attachment_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                complaint_id INT UNSIGNED NOT NULL,
-                file_path VARCHAR(255) NOT NULL,
-                file_type VARCHAR(50),
-                uploaded_by VARCHAR(50),
-                upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            ) ENGINE=InnoDB;
-        """
+        
         feedback_table = """
             CREATE TABLE IF NOT EXISTS feedback (
                 feedback_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -161,7 +152,6 @@ def create_tables():
         execute_and_print(cursor, complaint_status_table, 'complaint_status')
         execute_and_print(cursor, complaint_table, 'complaint')
         execute_and_print(cursor, complaint_history_table, 'complaint_history')
-        execute_and_print(cursor, attachment_table, 'attachment')
         execute_and_print(cursor, feedback_table, 'feedback')
 
         # --- Populate initial data ---
